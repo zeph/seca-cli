@@ -1,2 +1,11 @@
 coverage.html
 coverage.out
+
+# Binaries (Go standard practice)
+seca
+/seca
+*.exe
+
+# Build artifacts
+/dist/
+/build/

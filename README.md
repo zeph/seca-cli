@@ -2,6 +2,21 @@
 
 Go SDK for the SECA API specification. This SDK is currently mostly handwritten but will be replaced using code generators for the majority of the code in the future. The client HTTP code is already generated using a code generator.
 
+## Requirements
+
+- **Go 1.23.1+** for basic functionality
+- **Go 1.24.5+** required for spec generation with gomplate
+
+### Go Version Compatibility
+
+If you have an older Go version (< 1.24.5), you can use Go's automatic toolchain management to build the project:
+
+```sh
+GOTOOLCHAIN=auto make clean spec generate mock
+```
+
+This allows Go to automatically download and use the required Go version without changing your system installation.
+
 ## Getting Started
 
 To get started with the project, follow these steps:

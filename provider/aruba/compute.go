@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"net/http"
-	"net/url"
 
 	storageapi "github.com/eu-sovereign-cloud/go-sdk/pkg/spec/foundation.storage.v1"
 )
@@ -40,14 +41,18 @@ func (c *Client) ListImages(ctx context.Context, tenant string) (*storageapi.Ima
 
 // getArubaOSImages calls the real Aruba Cloud API to get OS images
 func (c *Client) getArubaOSImages(ctx context.Context) ([]ArubaOSImage, error) {
-	// Build the API URL for OS dictionary
-	apiURL, err := url.JoinPath(c.baseURL, "dictionary", "os")
+	// Create HTTP request with basic auth
+	projectID, err := c.GetDefaultProjectID(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to build API URL: %w", err)
+		return nil, fmt.Errorf("failed to get default project ID: %w", err)
 	}
 
+	// Construct the correct URL with the project ID
+	url := fmt.Sprintf("%s/projects/%s/providers/Aruba.Compute/templates", c.baseURL, projectID)
+	log.Printf("Requesting templates from URL: %s", url)
+
 	// Create HTTP request with basic auth
-	req, err := http.NewRequestWithContext(ctx, "GET", apiURL, nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
@@ -62,12 +67,20 @@ func (c *Client) getArubaOSImages(ctx context.Context) ([]ArubaOSImage, error) {
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("Aruba API returned status %d", resp.StatusCode)
+		body, _ := io.ReadAll(resp.Body)
+		return nil, fmt.Errorf("Aruba API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
-	// Parse the response
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	// Log the raw response body for debugging
+	log.Printf("Aruba Templates Response: %s", string(body))
+
 	var images []ArubaOSImage
-	if err := json.NewDecoder(resp.Body).Decode(&images); err != nil {
+	if err := json.Unmarshal(body, &images); err != nil {
 		return nil, fmt.Errorf("failed to decode response: %w", err)
 	}
 

@@ -1,7 +1,5 @@
 coverage.html
 coverage.out
-
-cmd
 # Binaries (Go standard practice)
 /seca
 *.exe

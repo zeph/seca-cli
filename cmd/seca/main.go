@@ -45,9 +45,9 @@ func main() {
 
 	// Initialize Aruba provider
 	clientConfig := aruba.ClientConfig{
-		Datacenter: arubaSettings.Datacenter,
-		Username:   arubaSettings.Username,
-		Password:   arubaSettings.Password,
+		Datacenter:   arubaSettings.Datacenter,
+		ClientID:     arubaSettings.ClientID,
+		ClientSecret: arubaSettings.ClientSecret,
 	}
 
 	client, err := aruba.NewClient(clientConfig)

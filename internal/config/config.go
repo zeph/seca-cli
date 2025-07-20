@@ -21,9 +21,9 @@ type Profile struct {
 
 // ArubaSettings defines the specific configuration for the Aruba provider.
 type ArubaSettings struct {
-	Datacenter string `mapstructure:"datacenter"`
-	Username   string `mapstructure:"username"`
-	Password   string `mapstructure:"password"`
+	Datacenter   string `mapstructure:"datacenter"`
+	ClientID     string `mapstructure:"client_id"`
+	ClientSecret string `mapstructure:"client_secret"`
 }
 
 var vp *viper.Viper
@@ -76,11 +76,11 @@ func (p *Profile) GetArubaSettings() (*ArubaSettings, error) {
 	if dc, ok := p.Settings["datacenter"].(string); ok {
 		settings.Datacenter = dc
 	}
-	if username, ok := p.Settings["username"].(string); ok {
-		settings.Username = username
+	if clientID, ok := p.Settings["client_id"].(string); ok {
+		settings.ClientID = clientID
 	}
-	if password, ok := p.Settings["password"].(string); ok {
-		settings.Password = password
+	if clientSecret, ok := p.Settings["client_secret"].(string); ok {
+		settings.ClientSecret = clientSecret
 	}
 
 	return settings, nil

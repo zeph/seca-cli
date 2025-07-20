@@ -34,21 +34,23 @@ func (c *Client) ListImages(ctx context.Context, tenant string) (*storageapi.Ima
 		secaImages = append(secaImages, secaImg)
 	}
 
-	return &storageapi.ImageIterator{
-		Items: secaImages,
-	}, nil
+	return &storageapi.ImageIterator{Items: secaImages}, nil
 }
 
 // getArubaOSImages calls the real Aruba Cloud API to get OS images
 func (c *Client) getArubaOSImages(ctx context.Context) ([]ArubaOSImage, error) {
-	// Create HTTP request with basic auth
-	projectID, err := c.GetDefaultProjectID(ctx)
+	log.Println("Listing images for tenant: default")
+
+	// In the absence of projects, we are not using an account ID for listing templates,
+	// as the templates endpoint is global and filtered by dataCenter.
+	// We still call this to ensure an account exists, but don't use the ID.
+	_, err := c.GetDefaultAccountID(ctx)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get default project ID: %w", err)
+		return nil, fmt.Errorf("failed to get default account ID: %w", err)
 	}
 
 	// Construct the correct URL with the project ID
-	url := fmt.Sprintf("%s/projects/%s/providers/Aruba.Compute/templates", c.baseURL, projectID)
+	url := fmt.Sprintf("%s/templates?dataCenter=%s", c.baseURL, c.datacenter)
 	log.Printf("Requesting templates from URL: %s", url)
 
 	// Create HTTP request with basic auth
@@ -56,7 +58,7 @@ func (c *Client) getArubaOSImages(ctx context.Context) ([]ArubaOSImage, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to create request: %w", err)
 	}
-	req.SetBasicAuth(c.username, c.password)
+	req.Header.Set("Authorization", "Bearer "+c.accessToken)
 	req.Header.Set("Accept", "application/json")
 
 	// Make the API call
